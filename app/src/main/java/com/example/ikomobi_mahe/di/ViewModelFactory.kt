@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.ikomobi_mahe.repository.NetworkRepository
+import com.example.ikomobi_mahe.repository.ProductRepository
 import com.example.ikomobi_mahe.view.MainViewModel
 import java.lang.IllegalArgumentException
 
@@ -14,12 +15,14 @@ class ViewModelFactory
 private constructor(appContext: Context) : ViewModelProvider.Factory {
 
     private val networkRepo = NetworkRepository.getInstance(appContext)
+    private val productRepo = ProductRepository(appContext)
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(MainViewModel::class.java) -> MainViewModel(
-                networkRepo
+                networkRepo,
+                productRepo
             ) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class.")
         }
