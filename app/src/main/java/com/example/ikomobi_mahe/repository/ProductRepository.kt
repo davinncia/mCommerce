@@ -2,7 +2,9 @@ package com.example.ikomobi_mahe.repository
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.ikomobi_mahe.database.AppDatabase
 import com.example.ikomobi_mahe.model.Product
 import com.example.ikomobi_mahe.service.ProductApiService
 import retrofit2.Retrofit
@@ -13,21 +15,30 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 class ProductRepository(context: Context) {
 
+    // Retrofit
     private val url = "https://agf.ikomobi.fr/"
     private val retrofit =
         Retrofit.Builder().baseUrl(url).addConverterFactory(GsonConverterFactory.create()).build()
     private val service = retrofit.create(ProductApiService::class.java)
 
-    val products = MutableLiveData<List<Product>>()
+    // Database
+    private val db = AppDatabase.getDatabase(context.applicationContext)
+    private val dao = db.productDao()
+
+    val products: LiveData<List<Product>> = dao.getAll()
+
 
     suspend fun fetchProducts() {
 
         try {
             val response = service.getAllProducts()
-            // DEBUG
-            products.postValue(response)
+            Log.d("debuglog", "Server request executed")
+            // Caching response and updating exercises by observation
+            dao.insert(response)
+            Log.d("debuglog", "caching...")
         } catch (cause: Throwable) {
-            Log.d("debuglog", "fetchProducts: ERROR", cause)
+            Log.d("debuglog", "ERROR connecting server", cause)
+
         }
 
     }

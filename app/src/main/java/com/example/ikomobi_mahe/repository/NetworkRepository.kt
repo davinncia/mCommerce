@@ -7,6 +7,9 @@ import android.net.NetworkRequest
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
+/**
+ * Repository informing when network connection is available.
+ */
 class NetworkRepository private constructor(context: Context) {
 
     private val _isNetworkAvailable = MutableLiveData<Boolean>()
