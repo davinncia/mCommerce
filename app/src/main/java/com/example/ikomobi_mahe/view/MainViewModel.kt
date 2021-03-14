@@ -1,9 +1,6 @@
 package com.example.ikomobi_mahe.view
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.ikomobi_mahe.model.Product
 import com.example.ikomobi_mahe.repository.NetworkRepository
 import com.example.ikomobi_mahe.repository.ProductRepository
@@ -14,16 +11,30 @@ class MainViewModel(
     productRepo: ProductRepository
 ) : ViewModel() {
 
-    val products: LiveData<List<Product>> = productRepo.products
+    /**
+     * List of products to be displayed. MediatorLiveData with two sources:
+     * - changes in database
+     * - available connection to network.
+     */
+    private val _products = MediatorLiveData<List<Product>>()
+    val products: LiveData<List<Product>> = _products
 
-    val networkAvailable: LiveData<Boolean> = Transformations.map(networkRepo.isNetworkAvailable) {
-        // Removing callback once data has been acquired from server
-        networkRepo.removeCallback()
-
-        viewModelScope.launch {
-            //TODO: catch error here
-            productRepo.fetchProducts()
+    init {
+        _products.addSource(productRepo.products) {
+            _products.value = it
         }
-        it
+
+        _products.addSource(networkRepo.isNetworkAvailable) { available ->
+            if (available) {
+                viewModelScope.launch {
+                    productRepo.fetchProducts()
+                }
+                // Removing callback once data has been acquired from server
+                networkRepo.removeCallback()
+                // Removing network as source
+                _products.removeSource(networkRepo.isNetworkAvailable)
+            }
+        }
     }
+
 }

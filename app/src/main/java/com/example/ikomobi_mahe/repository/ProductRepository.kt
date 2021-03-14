@@ -32,13 +32,10 @@ class ProductRepository(context: Context) {
 
         try {
             val response = service.getAllProducts()
-            Log.d("debuglog", "Server request executed")
             // Caching response and updating exercises by observation
             dao.insert(response)
-            Log.d("debuglog", "caching...")
         } catch (cause: Throwable) {
-            Log.d("debuglog", "ERROR connecting server", cause)
-
+            Log.d("debuglog", "Error connecting server", cause)
         }
 
     }
