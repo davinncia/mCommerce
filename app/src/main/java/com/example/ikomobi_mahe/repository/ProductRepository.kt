@@ -35,7 +35,7 @@ class ProductRepository(context: Context) {
             // Caching response and updating exercises by observation
             dao.insert(response)
         } catch (cause: Throwable) {
-            Log.d("debuglog", "Error connecting server", cause)
+            Log.w(ProductRepository::class.java.name, "Error connecting server", cause)
         }
 
     }
